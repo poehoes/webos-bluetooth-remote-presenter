@@ -15,6 +15,11 @@ function RemotecontrolAssistant(remotehost) {
 
 RemotecontrolAssistant.prototype.setup = function() {
     /* Constructor */
+
+    if (Main.debugEnable === false) {
+	this.controller.get('log-output').innerHTML = "";
+    }
+
     this.logInfo("Remote host address is: " + this.remotehost);
 
     // This number is prepended to the log entries
@@ -89,13 +94,40 @@ RemotecontrolAssistant.prototype.setup = function() {
 
     this.logInfo("InputElements length: " + this.inputElements.length);
     this.logInfo("inputElements: " + this.inputElements);
-};
+    this.controller.setupWidget(Mojo.Menu.appMenu,
+				this.attributes = {
+				    omitDefaultItems: true
+				},
+				this.model = {
+				    visible: true,
+				    items: [
+					{ label: "Preferences...", command: 'preferences' },
+				    ]
+				}); 
+
+}
+
+
+RemotecontrolAssistant.prototype.handleCommand = function(event) {
+    this.logInfo("Preferences event: " + event); 
+    if (event.type === Mojo.Event.command) {
+	switch (event.command) {
+	case 'preferences':
+	    this.controller.stageController.pushScene("preferences");
+	    break;
+	}
+    }
+}
 
 
 RemotecontrolAssistant.prototype.activate = function(event) {
     /* Connect to Palm SPP notification service - this must be running
        to accept SPP communications events. */
     
+    if (Main.debugEnable === false) {
+	this.controller.get('log-output').innerHTML = "";
+    }
+
     this.logInfo("Subscribe to notifications");
     this.sppNotificationService = this.controller.serviceRequest('palm://com.palm.bluetooth/spp', {
         method: "subscribenotifications",
@@ -239,6 +271,7 @@ RemotecontrolAssistant.prototype.disableAllInput = function(val) {
 
 RemotecontrolAssistant.prototype.deactivate = function(event) {
     this.disableAllInput(true);
+    this.disconnectSPP();  
 }
 
 
@@ -322,10 +355,11 @@ RemotecontrolAssistant.prototype.sppNotify = function(objData){
 
 
 RemotecontrolAssistant.prototype.logInfo = function(logText) {
-    // Log directly to the screen instead of a log file
-    this.controller.get('log-output').innerHTML = "<strong>" +
-	this.logOutputNum++ + "</strong>: " + 
-	logText + "<br />" + 
-	this.controller.get('log-output').innerHTML + 
-	"<br /><br />";       
+    if(Main.debugEnable === true) {
+	this.controller.get('log-output').innerHTML = "<strong>" +
+	    this.logOutputNum++ + "</strong>: " + logText + 
+	    "<br />" + 
+	    this.controller.get('log-output').innerHTML + 
+	    "<br /><br />";  
+    }
 }

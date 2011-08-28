@@ -1,10 +1,13 @@
 function MainAssistant() {}
 
+// Namespace
+Main={debugEnable: false};
 
 MainAssistant.prototype.setup = function() {
     this.logOutputNum=0; //display log number increment
     this.logInfo("Starting App");  //log info method will print logs to device screen
     
+
     this.controller.setupWidget("refreshButton",
 				this.attributes = {},
 				this.model = {
@@ -31,6 +34,29 @@ MainAssistant.prototype.setup = function() {
     this.handleHostChange = this.handleHostChange.bindAsEventListener(this);
     this.handleRefreshTap = this.handleRefreshTap.bindAsEventListener(this);
     this.handleStartTap = this.handleStartTap.bindAsEventListener(this);
+
+    this.controller.setupWidget(Mojo.Menu.appMenu,
+				this.attributes = {
+				    omitDefaultItems: true
+				},
+				this.model = {
+				    visible: true,
+				    items: [
+					{ label: "Preferences...", command: 'preferences' },
+				    ]
+				}); 
+}
+
+
+MainAssistant.prototype.handleCommand = function(event) {
+    this.logInfo("Preferences event: " + event); 
+    if (event.type === Mojo.Event.command) {
+	switch (event.command) {
+	case 'preferences':
+	    this.controller.stageController.pushScene("preferences");
+	    break;
+	}
+    }
 }
 
 
@@ -38,6 +64,10 @@ MainAssistant.prototype.setup = function() {
  * On activate get the list of trusted host devices and let the user choose one.
  */
 MainAssistant.prototype.activate = function(event) {
+    if (Main.debugEnable === false) {
+	this.controller.get('log-output').innerHTML = "";
+    }
+
     // activate listeners that are active in this scene
     this.controller.listen(this.controller.get("hostSelector"), Mojo.Event.propertyChange, this.handleHostChange);
     this.controller.listen(this.controller.get("refreshButton"), Mojo.Event.tap, this.handleRefreshTap);
@@ -137,6 +167,12 @@ MainAssistant.prototype.deactivate = function(event) {
  * Simple screen logging - add mojo log here if logging to console.
  */
 MainAssistant.prototype.logInfo = function(logText) {
-    this.controller.get('log-output').innerHTML = "<strong>" +this.logOutputNum++ + "</strong>: " + logText + "<br />" + this.controller.get('log-output').innerHTML + "<br /><br />";       
+    if(Main.debugEnable === true) {
+	this.controller.get('log-output').innerHTML = "<strong>" +
+	    this.logOutputNum++ + "</strong>: " + logText + 
+	    "<br />" + 
+	    this.controller.get('log-output').innerHTML + 
+	    "<br /><br />";  
+    }
 }
 
