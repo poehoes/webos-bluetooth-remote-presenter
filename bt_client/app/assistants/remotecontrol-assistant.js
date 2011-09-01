@@ -15,18 +15,20 @@ function RemotecontrolAssistant(remotehost) {
 
 RemotecontrolAssistant.prototype.setup = function() {
     /* Constructor */
-
     if (Main.debugEnable === false) {
 	this.controller.get('log-output').innerHTML = "";
     }
 
     this.logInfo("Remote host address is: " + this.remotehost);
 
+    // Bind handler's "this" to our "this"
+    var that=this;
+
     // This number is prepended to the log entries
     this.logOutputNum = 0;
 
     // Input with special key codes
-    this.specialKeys = { 8: "bkspc", 32: "space" };
+    this.specialKeys = { 8: "bkspc", 32: "space", "volume_up" : "pgup", "volume_down" : "pgdn" };
 
     // Store all inputElements (Buttons + Keypress stuff) in a list for later operations (disable, enable)
     this.inputElements = [];
@@ -65,7 +67,6 @@ RemotecontrolAssistant.prototype.setup = function() {
 				this.model = this.enterButtonModel
 			       );
 
-    // Bind handler's "this" to our "this"
     this.handleTap = this.handleTap.bindAsEventListener(this);
     this.handleKeypress = this.handleKeypress.bindAsEventListener(this);
 
@@ -93,7 +94,7 @@ RemotecontrolAssistant.prototype.setup = function() {
 			      event: Mojo.Event.keypress});
 
     this.logInfo("InputElements length: " + this.inputElements.length);
-    this.logInfo("inputElements: " + this.inputElements);
+    this.logInfo("InputElements: " + this.inputElements);
     this.controller.setupWidget(Mojo.Menu.appMenu,
 				this.attributes = {
 				    omitDefaultItems: true
@@ -218,7 +219,7 @@ RemotecontrolAssistant.prototype.disconnectSPP = function(){
      * Disconnect from the SPP device when exiting the application!
      */
 
-    var that=this;
+    var that=this; //used to scope this here.
     
     //  Close serial and spp connection
     if (this.targetAddress !== "" && this.instanceId !== undefined) {
@@ -252,6 +253,8 @@ RemotecontrolAssistant.prototype.disconnectSPP = function(){
 }
 
 RemotecontrolAssistant.prototype.disableAllInput = function(val) {
+    this.logInfo("in disableAllInput(" + val + ")");
+    var that = this; // scope this
     for (var i = 0; i < this.inputElements.length; i++) {
 	var current = this.inputElements[i];
 
@@ -259,107 +262,139 @@ RemotecontrolAssistant.prototype.disableAllInput = function(val) {
 	current.model.disabled = val;
 	this.controller.modelChanged(current.model);
 
-	// Start /stop listening for DOM events
+	// Start /stop listening for events
 	if (val == true) {
 	    this.controller.stopListening(current.element, current.event, current.handler);
 	} else {
 	    this.controller.listen(current.element, current.event, current.handler);
 	}
     }
+
+    if (val === false) {
+	// Listen for special keys "Volume up" and "Volume down"
+	this.controller.serviceRequest('palm://com.palm.keys/audio', {
+	    method:'status',
+	    parameters:{"subscribe": !val},
+	    onSuccess : function (r){ that.logInfo("Audio keys subscribe(" + 
+						   !val + "): Success, results=" + 
+						   JSON.stringify(r)); 
+				      if (r.state == "down") {
+					  var charval = that.specialKeys[r.key];
+					  that.writePort(charval);
+				      }
+				    },
+	    onFailure : function (r){ that.logInfo("Audio keys subscribe(" + 
+						   !val + "): Failure, results=" + 
+						   JSON.stringify(r)); }   
+	});
+    } else {
+	// disable events
+	this.controller.serviceRequest('palm://com.palm.keys/audio', {
+	    method:'status',
+	    parameters:{"subscribe": !val},
+	    onSuccess : function (r){ that.logInfo("Audio keys subscribe(" + 
+						   !val + "): Success, results=" + 
+						   JSON.stringify(r)); 
+				    },
+	    onFailure : function (r){ that.logInfo("Audio keys subscribe(" + 
+						   !val + "): Failure, results=" + 
+						   JSON.stringify(r)); }   
+	});
+    }
 }
 
 
-RemotecontrolAssistant.prototype.deactivate = function(event) {
-    this.disableAllInput(true);
-    this.disconnectSPP();  
-}
+    RemotecontrolAssistant.prototype.deactivate = function(event) {
+	this.disableAllInput(true);
+	this.disconnectSPP();  
+    }
 
 
-RemotecontrolAssistant.prototype.cleanup = function(event) {
-    this.disconnectSPP();  
-} 
+    RemotecontrolAssistant.prototype.cleanup = function(event) {
+	this.disconnectSPP();  
+    } 
 
 
-RemotecontrolAssistant.prototype.sppNotify = function(objData){
-    /*
-     * Notification handler for SPP events.  
-     *
-     * General sequence that events are expected to arrive: 
-     * - notifnservicenames -> The BT stack gives us the services that
-     *                         are available on the remote device 
-     * - notifnconnected    -> We are connected to the remote service,
-     *                         Now we need to open a port to the service
-     */
+    RemotecontrolAssistant.prototype.sppNotify = function(objData){
+	/*
+	 * Notification handler for SPP events.  
+	 *
+	 * General sequence that events are expected to arrive: 
+	 * - notifnservicenames -> The BT stack gives us the services that
+	 *                         are available on the remote device 
+	 * - notifnconnected    -> We are connected to the remote service,
+	 *                         Now we need to open a port to the service
+	 */
 
-    var that = this; //used to scope this here.
-    
-    this.logInfo("SPP notification: "+JSON.stringify(objData));
-    this.instanceId = objData.instanceId;
+	var that = this; //used to scope this here.
+	
+	this.logInfo("SPP notification: "+JSON.stringify(objData));
+	this.instanceId = objData.instanceId;
 
-    for(var key in objData) {
-        if (key === "notification") {
-            switch(objData.notification){
-            case "notifnservicenames":
-                this.logInfo("SPP service name: " + objData.services[0] + 
-			     ", instanceId: " + objData.instanceId);                
-		// TODO: select only "RemoteControlService"
-                /* Send select service response */
-                this.controller.serviceRequest('palm://com.palm.bluetooth/spp', 
-					       {method: "selectservice", 
-						parameters: {"instanceId" : objData.instanceId,
-							     "servicename":objData.services[0]}
-						,
-						onSuccess : function (e){ 
-						    that.logInfo("selectservice success, results="+
-								 JSON.stringify(e)); },
-						onFailure : function (e){ 
-						    that.logInfo("selectservice failure, results="+
-								 JSON.stringify(e)); } 
-					       });
-                return;                                                           
-                break;
+	for(var key in objData) {
+            if (key === "notification") {
+		switch(objData.notification){
+		case "notifnservicenames":
+                    this.logInfo("SPP service name: " + objData.services[0] + 
+				 ", instanceId: " + objData.instanceId);                
+		    // TODO: select only "RemoteControlService"
+                    /* Send select service response */
+                    this.controller.serviceRequest('palm://com.palm.bluetooth/spp', 
+						   {method: "selectservice", 
+						    parameters: {"instanceId" : objData.instanceId,
+								 "servicename":objData.services[0]}
+						    ,
+						    onSuccess : function (e){ 
+							that.logInfo("selectservice success, results="+
+								     JSON.stringify(e)); },
+						    onFailure : function (e){ 
+							that.logInfo("selectservice failure, results="+
+								     JSON.stringify(e)); } 
+						   });
+                    return;                                                           
+                    break;
 
-            case "notifnconnected":
-                this.logInfo("SPP Connected");  
-                //for some reason two different keys are used for instanceId are passed
-                if(objData.error === 0){
-		    this.logInfo("Opening port ...");
-                    this.controller.serviceRequest('palm://com.palm.service.bluetooth.spp', {
-                        method: "open",
-                        parameters: {"instanceId":objData.instanceId},
-                        onSuccess: this.openWriteReady.bind(this),
-                        onFailure: function(failData) {
-                            that.logInfo("Unable to Open SPP Port, errCode: " + 
-					 failData.errorCode + "<br/>"+ failData.errorText);
-                        }                                                            
-                    });
-                } else {
-		    this.logInfo(", but there is an error code:" + objData.error);
+		case "notifnconnected":
+                    this.logInfo("SPP Connected");  
+                    //for some reason two different keys are used for instanceId are passed
+                    if(objData.error === 0){
+			this.logInfo("Opening port ...");
+			this.controller.serviceRequest('palm://com.palm.service.bluetooth.spp', {
+                            method: "open",
+                            parameters: {"instanceId":objData.instanceId},
+                            onSuccess: this.openWriteReady.bind(this),
+                            onFailure: function(failData) {
+				that.logInfo("Unable to Open SPP Port, errCode: " + 
+					     failData.errorCode + "<br/>"+ failData.errorText);
+                            }                                                            
+			});
+                    } else {
+			this.logInfo(", but there is an error code:" + objData.error);
+		    }
+                    return;    
+                    break;
+
+		case "notifndisconnected":
+                    this.logInfo("Device has terminated the connection or is out of range...");
+		    
+		    // Deactivate all input (buttons + keyboard)
+		    this.disableAllInput(true);
+                    break;
+
+		default:
+                    break;
 		}
-                return;    
-                break;
-
-            case "notifndisconnected":
-                this.logInfo("Device has terminated the connection or is out of range...");
-		
-		// Deactivate all input (buttons + keyboard)
-		this.disableAllInput(true);
-                break;
-
-            default:
-                break;
-            }
-        } 
+            } 
+	}
     }
-}
 
 
-RemotecontrolAssistant.prototype.logInfo = function(logText) {
-    if(Main.debugEnable === true) {
-	this.controller.get('log-output').innerHTML = "<strong>" +
-	    this.logOutputNum++ + "</strong>: " + logText + 
-	    "<br />" + 
-	    this.controller.get('log-output').innerHTML + 
-	    "<br /><br />";  
+    RemotecontrolAssistant.prototype.logInfo = function(logText) {
+	if(Main.debugEnable === true) {
+	    this.controller.get('log-output').innerHTML = "<strong>" +
+		this.logOutputNum++ + "</strong>: " + logText + 
+		"<br />" + 
+		this.controller.get('log-output').innerHTML + 
+		"<br /><br />";  
+	}
     }
-}
