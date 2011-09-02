@@ -105,7 +105,30 @@ RemotecontrolAssistant.prototype.setup = function() {
 					{ label: "Preferences...", command: 'preferences' },
 				    ]
 				}); 
+    this.logInfo("Subscribe to bluetooth notifications");
+    this.sppNotificationService = this.controller.serviceRequest('palm://com.palm.bluetooth/spp', {
+        method: "subscribenotifications",
+        parameters: {"subscribe":true},
+        onSuccess: this.sppNotify.bind(this),
+        onFailure: function(failData){
+            this.logInfo("notifnserverenabled, errCode: " + failData.errorCode);
+        }                                                            
+    });
 
+    this.logInfo("Subscribe to audio key events");
+    this.controller.serviceRequest('palm://com.palm.keys/audio', {
+	method:'status',
+	parameters:{"subscribe": true},
+	onSuccess : function (r){ that.logInfo("Audio keys: results=" + 
+					       JSON.stringify(r)); 
+				  if ((r.state == "down") && (Main.enableVolumekeys === true)) {
+				      var charval = that.specialKeys[r.key];
+				      that.writePort(charval);
+				  }
+				},
+	onFailure : function (r){ that.logInfo("Audio keys subscribe(true): Failure, results=" + 
+					       JSON.stringify(r)); }   
+    });
 }
 
 
@@ -125,20 +148,11 @@ RemotecontrolAssistant.prototype.activate = function(event) {
     /* Connect to Palm SPP notification service - this must be running
        to accept SPP communications events. */
     
+    // clear debug area if the debug setting changed.
     if (Main.debugEnable === false) {
 	this.controller.get('log-output').innerHTML = "";
     }
 
-    this.logInfo("Subscribe to notifications");
-    this.sppNotificationService = this.controller.serviceRequest('palm://com.palm.bluetooth/spp', {
-        method: "subscribenotifications",
-        parameters: {"subscribe":true},
-        onSuccess: this.sppNotify.bind(this),
-        onFailure: function(failData){
-            this.logInfo("notifnserverenabled, errCode: " + failData.errorCode);
-        }                                                            
-    });
-    
     // Connect to a paired device - this sets up a new event channel
     // (see sppNotificationService)
     if(this.remotehost !== "") {
@@ -213,44 +227,56 @@ RemotecontrolAssistant.prototype.writePort = function(msg){
     });
 }
 
-RemotecontrolAssistant.prototype.disconnectSPP = function(){
+RemotecontrolAssistant.prototype.disconnectAll = function() {
     /* Disconnect SPP Device
      * !!!!Very Important!!!!
      * Disconnect from the SPP device when exiting the application!
      */
 
     var that=this; //used to scope this here.
-    
+    this.logInfo("disconnectAll()");
+    this.closeSPP();
+}
+
+
+RemotecontrolAssistant.prototype.closeSPP = function() {
+    this.logInfo("Close connection");
     //  Close serial and spp connection
     if (this.targetAddress !== "" && this.instanceId !== undefined) {
         // Close comm port
         this.controller.serviceRequest('palm://com.palm.service.bluetooth.spp', {
             method: "close",
             parameters: {"instanceId":this.instanceId},
-            onSuccess: function(objData){return;},
-            onFailure: function(failData) {
-                that.logInfo("Unable to close SPP Port, errCode: " + 
-			     failData.errorCode + "<br/>"+ failData.errorText);
-            }                                                            
-        });
-        
-        // Disconnect from SPP
-        this.connectBTDevice = this.controller.serviceRequest('palm://com.palm.bluetooth/spp', {
-            method: "disconnect",
-            parameters: {
-                "address": this.targetAddress,
-                "instanceId":this.instanceId
-            },
             onSuccess: function(objData){
-                that.logInfo("Disconnected from SPP");
-                return;
-            },
-            onFailure: function(failData){
-                that.logInfo("Disconnect, errCode: " + failData.errorCode);
-            }
+		that.logInfo("Success: close");
+		that.disconnectSPP();},
+            onFailure: function(failData) {
+                that.logInfo("Fail: close SPP Port, errCode: " + 
+			     failData.errorCode + "<br/>"+ failData.errorText);
+		that.disconnectSPP();},
         });
-    } 
+    }
 }
+
+
+RemotecontrolAssistant.prototype.disconnectSPP = function() {
+    var that = this;
+    this.logInfo("Disconnect from SPP");
+    this.connectBTDevice = this.controller.serviceRequest('palm://com.palm.bluetooth/spp', {
+        method: "disconnect",
+        parameters: {
+            "address": this.targetAddress,
+            "instanceId":this.instanceId
+        },
+        onSuccess: function(objData) {
+            that.logInfo("Success: Disconnected from SPP");
+        },
+        onFailure: function(failData) {
+            that.logInfo("Fail: Disconnect from SSP, errCode: " + failData.errorCode);
+        }
+    });
+}
+
 
 RemotecontrolAssistant.prototype.disableAllInput = function(val) {
     this.logInfo("in disableAllInput(" + val + ")");
@@ -269,49 +295,17 @@ RemotecontrolAssistant.prototype.disableAllInput = function(val) {
 	    this.controller.listen(current.element, current.event, current.handler);
 	}
     }
-
-    if ((val === false) && (Main.enableVolumekeys === true)) {
-	// Listen for special keys "Volume up" and "Volume down"
-	this.controller.serviceRequest('palm://com.palm.keys/audio', {
-	    method:'status',
-	    parameters:{"subscribe": !val},
-	    onSuccess : function (r){ that.logInfo("Audio keys subscribe(" + 
-						   !val + "): Success, results=" + 
-						   JSON.stringify(r)); 
-				      if (r.state == "down") {
-					  var charval = that.specialKeys[r.key];
-					  that.writePort(charval);
-				      }
-				    },
-	    onFailure : function (r){ that.logInfo("Audio keys subscribe(" + 
-						   !val + "): Failure, results=" + 
-						   JSON.stringify(r)); }   
-	});
-    } else {
-	// disable events
-	this.controller.serviceRequest('palm://com.palm.keys/audio', {
-	    method:'status',
-	    parameters:{"subscribe": !val},
-	    onSuccess : function (r){ that.logInfo("Audio keys subscribe(" + 
-						   !val + "): Success, results=" + 
-						   JSON.stringify(r)); 
-				    },
-	    onFailure : function (r){ that.logInfo("Audio keys subscribe(" + 
-						   !val + "): Failure, results=" + 
-						   JSON.stringify(r)); }   
-	});
-    }
 }
 
 
 RemotecontrolAssistant.prototype.deactivate = function(event) {
     this.disableAllInput(true);
-    this.disconnectSPP();  
+    this.disconnectAll();  
 }
 
 
 RemotecontrolAssistant.prototype.cleanup = function(event) {
-    this.disconnectSPP();  
+    this.disconnectAll();  
 } 
 
 
