@@ -32,9 +32,9 @@ PreferencesAssistant.prototype.setup = function() {
 
 PreferencesAssistant.prototype.changeDebug = function(event) {
     // event triggerd by user: value changed
-    Mojo.Log.error("Preferences changeDebug; value = ", this.debugToggleModel.value);
+    Mojo.Log.info("Preferences changeDebug; value = ", this.debugToggleModel.value);
     Main.debugEnable = this.debugToggleModel.value;
-    Mojo.Log.error("Main.debugEnable = ", Main.debugEnable);
+    Mojo.Log.info("Main.debugEnable = ", Main.debugEnable);
     if (Main.debugEnable === false) {
 	this.controller.get('log-output').innerHTML = "";
     }
@@ -43,16 +43,16 @@ PreferencesAssistant.prototype.changeDebug = function(event) {
 
 PreferencesAssistant.prototype.changeEnableVolumekeys = function(event) {
     // event triggerd by user: value changed
-    Mojo.Log.error("Preferences changEnableVolumekeys; value = ", this.enableVolumekeysModel.value);
+    this.logInfo("Preferences changEnableVolumekeys; value = ", this.enableVolumekeysModel.value);
     Main.enableVolumekeys = this.enableVolumekeysModel.value;
-    Mojo.Log.error("Main.enableVolumekeys = ", Main.enableVolumekeys);
+    this.logInfo("Main.enableVolumekeys = ", Main.enableVolumekeys);
 }
 
 
 PreferencesAssistant.prototype.changeInhibitPowerOff = function(event) {
     // event triggerd by user: value changed
     var that = this; // scoping of this
-    Mojo.Log.error("Preferences changeInhibitPowerOff; value = ", this.inhibitPowerOffModel.value);
+    this.logInfo("Preferences changeInhibitPowerOff; value = ", this.inhibitPowerOffModel.value);
     if (this.inhibitPowerOffModel.value === true) {
 	this.controller.serviceRequest("palm://com.palm.power/com/palm/power", {
 	    method: "activityStart",
