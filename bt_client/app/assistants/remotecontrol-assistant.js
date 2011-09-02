@@ -270,7 +270,7 @@ RemotecontrolAssistant.prototype.disableAllInput = function(val) {
 	}
     }
 
-    if (val === false) {
+    if ((val === false) && (Main.enableVolumekeys === true)) {
 	// Listen for special keys "Volume up" and "Volume down"
 	this.controller.serviceRequest('palm://com.palm.keys/audio', {
 	    method:'status',
@@ -304,97 +304,97 @@ RemotecontrolAssistant.prototype.disableAllInput = function(val) {
 }
 
 
-    RemotecontrolAssistant.prototype.deactivate = function(event) {
-	this.disableAllInput(true);
-	this.disconnectSPP();  
-    }
+RemotecontrolAssistant.prototype.deactivate = function(event) {
+    this.disableAllInput(true);
+    this.disconnectSPP();  
+}
 
 
-    RemotecontrolAssistant.prototype.cleanup = function(event) {
-	this.disconnectSPP();  
-    } 
+RemotecontrolAssistant.prototype.cleanup = function(event) {
+    this.disconnectSPP();  
+} 
 
 
-    RemotecontrolAssistant.prototype.sppNotify = function(objData){
-	/*
-	 * Notification handler for SPP events.  
-	 *
-	 * General sequence that events are expected to arrive: 
-	 * - notifnservicenames -> The BT stack gives us the services that
-	 *                         are available on the remote device 
-	 * - notifnconnected    -> We are connected to the remote service,
-	 *                         Now we need to open a port to the service
-	 */
+RemotecontrolAssistant.prototype.sppNotify = function(objData) {
+    /*
+     * Notification handler for SPP events.  
+     *
+     * General sequence that events are expected to arrive: 
+     * - notifnservicenames -> The BT stack gives us the services that
+     *                         are available on the remote device 
+     * - notifnconnected    -> We are connected to the remote service,
+     *                         Now we need to open a port to the service
+     */
 
-	var that = this; //used to scope this here.
-	
-	this.logInfo("SPP notification: "+JSON.stringify(objData));
-	this.instanceId = objData.instanceId;
+    var that = this; //used to scope this here.
+    
+    this.logInfo("SPP notification: "+JSON.stringify(objData));
+    this.instanceId = objData.instanceId;
 
-	for(var key in objData) {
-            if (key === "notification") {
-		switch(objData.notification){
-		case "notifnservicenames":
-                    this.logInfo("SPP service name: " + objData.services[0] + 
-				 ", instanceId: " + objData.instanceId);                
-		    // TODO: select only "RemoteControlService"
-                    /* Send select service response */
-                    this.controller.serviceRequest('palm://com.palm.bluetooth/spp', 
-						   {method: "selectservice", 
-						    parameters: {"instanceId" : objData.instanceId,
-								 "servicename":objData.services[0]}
-						    ,
-						    onSuccess : function (e){ 
-							that.logInfo("selectservice success, results="+
-								     JSON.stringify(e)); },
-						    onFailure : function (e){ 
-							that.logInfo("selectservice failure, results="+
-								     JSON.stringify(e)); } 
-						   });
-                    return;                                                           
-                    break;
+    for(var key in objData) {
+        if (key === "notification") {
+	    switch(objData.notification){
+	    case "notifnservicenames":
+                this.logInfo("SPP service name: " + objData.services[0] + 
+			     ", instanceId: " + objData.instanceId);                
+		// TODO: select only "RemoteControlService"
+                /* Send select service response */
+                this.controller.serviceRequest('palm://com.palm.bluetooth/spp', 
+					       {method: "selectservice", 
+						parameters: {"instanceId" : objData.instanceId,
+							     "servicename":objData.services[0]}
+						,
+						onSuccess : function (e){ 
+						    that.logInfo("selectservice success, results="+
+								 JSON.stringify(e)); },
+						onFailure : function (e){ 
+						    that.logInfo("selectservice failure, results="+
+								 JSON.stringify(e)); } 
+					       });
+                return;                                                           
+                break;
 
-		case "notifnconnected":
-                    this.logInfo("SPP Connected");  
-                    //for some reason two different keys are used for instanceId are passed
-                    if(objData.error === 0){
-			this.logInfo("Opening port ...");
-			this.controller.serviceRequest('palm://com.palm.service.bluetooth.spp', {
-                            method: "open",
-                            parameters: {"instanceId":objData.instanceId},
-                            onSuccess: this.openWriteReady.bind(this),
-                            onFailure: function(failData) {
-				that.logInfo("Unable to Open SPP Port, errCode: " + 
-					     failData.errorCode + "<br/>"+ failData.errorText);
-                            }                                                            
-			});
-                    } else {
-			this.logInfo(", but there is an error code:" + objData.error);
-		    }
-                    return;    
-                    break;
-
-		case "notifndisconnected":
-                    this.logInfo("Device has terminated the connection or is out of range...");
-		    
-		    // Deactivate all input (buttons + keyboard)
-		    this.disableAllInput(true);
-                    break;
-
-		default:
-                    break;
+	    case "notifnconnected":
+                this.logInfo("SPP Connected");  
+                //for some reason two different keys are used for instanceId are passed
+                if(objData.error === 0){
+		    this.logInfo("Opening port ...");
+		    this.controller.serviceRequest('palm://com.palm.service.bluetooth.spp', {
+                        method: "open",
+                        parameters: {"instanceId":objData.instanceId},
+                        onSuccess: this.openWriteReady.bind(this),
+                        onFailure: function(failData) {
+			    that.logInfo("Unable to Open SPP Port, errCode: " + 
+					 failData.errorCode + "<br/>"+ failData.errorText);
+                        }                                                            
+		    });
+                } else {
+		    this.logInfo(", but there is an error code:" + objData.error);
 		}
-            } 
-	}
+                return;    
+                break;
+
+	    case "notifndisconnected":
+                this.logInfo("Device has terminated the connection or is out of range...");
+		
+		// Deactivate all input (buttons + keyboard)
+		this.disableAllInput(true);
+                break;
+
+	    default:
+                break;
+	    }
+        } 
     }
+}
 
 
-    RemotecontrolAssistant.prototype.logInfo = function(logText) {
-	if(Main.debugEnable === true) {
-	    this.controller.get('log-output').innerHTML = "<strong>" +
-		this.logOutputNum++ + "</strong>: " + logText + 
-		"<br />" + 
-		this.controller.get('log-output').innerHTML + 
-		"<br /><br />";  
-	}
+RemotecontrolAssistant.prototype.logInfo = function(logText) {
+    if(Main.debugEnable === true) {
+	this.controller.get('log-output').innerHTML = "<strong>" +
+	    this.logOutputNum++ + "</strong>: " + logText + 
+	    "<br />" + 
+	    this.controller.get('log-output').innerHTML + 
+	    "<br /><br />";  
     }
+}

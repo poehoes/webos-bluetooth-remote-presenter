@@ -1,7 +1,7 @@
 function MainAssistant() {}
 
 // Namespace
-Main={debugEnable: false};
+Main={debugEnable: false, enableVolumekeys: true};
 
 MainAssistant.prototype.setup = function() {
     this.logOutputNum=0; //display log number increment
