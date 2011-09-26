@@ -10,4 +10,4 @@ def isSystemDLL(pathname):
 py2exe.build_exe.isSystemDLL = isSystemDLL
 
 
-setup(console=['bluetoothserver.py'])
+setup(console=['bluetoothserver.py'],  options={"py2exe":{"dll_excludes":[ "mswsock.dll", "powrprof.dll" ]}})
