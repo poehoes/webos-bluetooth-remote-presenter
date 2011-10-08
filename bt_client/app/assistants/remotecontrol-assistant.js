@@ -1,3 +1,4 @@
+
 function RemotecontrolAssistant(remotehost) {
     /* this is the creator function for your scene assistant object. It will be passed all the 
        additional parameters (after the scene name) that were passed to pushScene. The reference
@@ -171,13 +172,13 @@ RemotecontrolAssistant.prototype.handleTap = function(event) {
     this.logInfo("handleTap: " + event);
     // check if the source element name matches one of our button names
     if (event.srcElement.id.indexOf("up") != -1) {
-	this.writePort("pgup");
+	this.writePort("pgup\n");
     } else if (event.srcElement.id.indexOf("dn") != -1) {
-	this.writePort("pgdn");
+	this.writePort("pgdn\n");
     } else if (event.srcElement.id.indexOf("alttab") != -1) {
-	this.writePort("alttab");
+	this.writePort("alttab\n");
     } else if (event.srcElement.id.indexOf("enter") != -1) {
-	this.writePort("enter");
+	this.writePort("enter\n");
     }
 };
 
@@ -189,7 +190,7 @@ RemotecontrolAssistant.prototype.handleKeypress = function(event) {
     this.logInfo("handleKeypress: " + event.originalEvent.which + " --> " + 
 		 String.fromCharCode(event.originalEvent.which));
     var which = event.originalEvent.which;
-    var charval = this.specialKeys[which] || String.fromCharCode(which);
+    var charval = this.specialKeys[which] || String.fromCharCode(which) + "\n";
     this.writePort(charval);
 };
 

@@ -34,7 +34,7 @@ keys = { 'pgdn': '{PGDN}',
 for k,v in zip(string.lowercase + string.digits, string.lowercase + string.digits):
     keys[k] = v
 
-# make the Bluetooth service know for this device
+# make the Bluetooth service known for this device
 advertise_service( server_sock, "RemoteControlService",
                    service_classes = [ SERIAL_PORT_CLASS ],
                    profiles = [ SERIAL_PORT_PROFILE ], 
@@ -50,6 +50,7 @@ while True:
         while True:
             print "Waiting for data on client socket..."
             data = client_sock.recv(1024)
+            data = string.strip(data)
             print "received [%s]" % data
             if len(data) == 0: break
             if keys.has_key(data):
