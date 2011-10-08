@@ -16,14 +16,14 @@ class WinappController(object):
 
 def get_port():
     port = None
-    # First, try RFCOMM. This seems to work on Windows 7 (and up) only.
+    # First, try RFCOMM using the PyBluez module. This seems to work on Windows 7 (and up) only.
     try:
         import connection_rfcomm
         port = connection_rfcomm.BluetoothRfcomm()
     except:
         # Fallback is "Bluetooth over virtual serial port", as it is more difficult to setup
         # (need for a virtual COM port, and user needs to know that
-        # port number)
+        # port number). This needs the PySerial module.
 
         # Ask the user for COM port number. PySerial counts them zero-based, so
         # subtract one (1) from that.
