@@ -1,5 +1,4 @@
 import string
-from bluetooth import BluetoothSocket, RFCOMM, PORT_ANY, advertise_service, SERIAL_PORT_CLASS, SERIAL_PORT_PROFILE
 import win32com.client
 
 class WinappController(object):
@@ -15,12 +14,26 @@ class WinappController(object):
         self.shell.SendKeys(key)
 
 
-server_sock=BluetoothSocket( RFCOMM )
-server_sock.bind(("",PORT_ANY))
-server_sock.listen(1)
+def get_port():
+    port = None
+    # First, try RFCOMM. This seems to work on Windows 7 (and up) only.
+    try:
+        import connection_rfcomm
+        port = connection_rfcomm.BluetoothRfcomm()
+    except:
+        # Fallback is "Bluetooth over virtual serial port", as it is more difficult to setup
+        # (need for a virtual COM port, and user needs to know that
+        # port number)
 
-port = server_sock.getsockname()[1]
+        # Ask the user for COM port number. PySerial counts them zero-based, so
+        # subtract one (1) from that.
+        portnum = int(input("Enter the virtual COM port number for your Bluetooth device: ")) - 1
+        import connection_serialport
+        port = connection_serialport.BluetoothSerialport(portnum)
 
+    return port
+
+    
 # handle special keys
 keys = { 'pgdn': '{PGDN}', 
          'pgup': '{PGUP}', 
@@ -34,23 +47,14 @@ keys = { 'pgdn': '{PGDN}',
 for k,v in zip(string.lowercase + string.digits, string.lowercase + string.digits):
     keys[k] = v
 
-# make the Bluetooth service known for this device
-advertise_service( server_sock, "RemoteControlService",
-                   service_classes = [ SERIAL_PORT_CLASS ],
-                   profiles = [ SERIAL_PORT_PROFILE ], 
-                   )
-
 app = WinappController()
-print "Waiting for connection on RFCOMM channel %d" % port
+port = get_port()
 while True:
-    client_sock, client_info = server_sock.accept()
-    print "Accepted connection from ", client_info, ", on socket ", client_sock
-
     try:
+        port.get_connection()
         while True:
             print "Waiting for data on client socket..."
-            data = client_sock.recv(1024)
-            data = string.strip(data)
+            data = port.get_data()
             print "received [%s]" % data
             if len(data) == 0: break
             if keys.has_key(data):
@@ -62,8 +66,7 @@ while True:
     except IOError:
         pass
     print "disconnected"
-    client_sock.close()
-
-server_sock.close()
+    port.close()
+port.destroy()
 print "all done"
 
