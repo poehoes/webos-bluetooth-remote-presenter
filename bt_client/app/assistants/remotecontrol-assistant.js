@@ -123,7 +123,7 @@ RemotecontrolAssistant.prototype.setup = function() {
 	onSuccess : function (r){ that.logInfo("Audio keys: results=" + 
 					       JSON.stringify(r)); 
 				  if ((r.state == "down") && (Main.enableVolumekeys === true)) {
-				      var charval = that.specialKeys[r.key];
+				      var charval = that.specialKeys[r.key] + "\n";
 				      that.writePort(charval);
 				  }
 				},
@@ -190,8 +190,8 @@ RemotecontrolAssistant.prototype.handleKeypress = function(event) {
     this.logInfo("handleKeypress: " + event.originalEvent.which + " --> " + 
 		 String.fromCharCode(event.originalEvent.which));
     var which = event.originalEvent.which;
-    var charval = this.specialKeys[which] || String.fromCharCode(which) + "\n";
-    this.writePort(charval);
+    var charval = this.specialKeys[which] || String.fromCharCode(which);
+    this.writePort(charval + "\n");
 };
 
 
