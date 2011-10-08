@@ -1,7 +1,6 @@
 import string
 from bluetooth import BluetoothSocket, RFCOMM, PORT_ANY, advertise_service, SERIAL_PORT_CLASS, SERIAL_PORT_PROFILE
 
-raise Exception("not implrtmented")
 
 class BluetoothRfcomm:
     def __init__(self):
