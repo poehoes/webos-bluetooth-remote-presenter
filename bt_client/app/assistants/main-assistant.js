@@ -1,7 +1,19 @@
 function MainAssistant() {}
 
 // Namespace
-Main={debugEnable: false, enableVolumekeys: true, inhibitPowerOff: true};
+Main={debugEnable: false, 
+      enableVolumekeys: true, 
+      inhibitPowerOff: true, 
+      useMouse: false,     
+      specialKeys: { 8: "bkspc", 
+		     32: "space", 
+		     "volume_up": "pgup", 
+		     "volume_down": "pgdn", 
+		     "button_1_el": "pgup", 
+		     "button_2_el": "pgdn",
+		     "button_3_el": "alttab",
+		     "button_4_el": "enter"}
+};
 
 MainAssistant.prototype.setup = function() {
     this.logOutputNum=0; //display log number increment

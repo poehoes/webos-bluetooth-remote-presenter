@@ -24,9 +24,18 @@ PreferencesAssistant.prototype.setup = function() {
 				});
 
 
+    // Toggle sending Mouse events 
+    this.controller.setupWidget("useMouse",
+				{},
+				this.useMouseModel = {
+				    value: Main.useMouse
+				});
+
+
     this.changeDebugHandler = this.changeDebug.bindAsEventListener(this);
     this.changeEnableVolumekeysHandler = this.changeEnableVolumekeys.bindAsEventListener(this);
     this.changeInhibitPowerOffHandler = this.changeInhibitPowerOff.bindAsEventListener(this);
+    this.useMouseHandler = this.changeUseMouse.bindAsEventListener(this);
 }
 
 
@@ -46,6 +55,14 @@ PreferencesAssistant.prototype.changeEnableVolumekeys = function(event) {
     this.logInfo("Preferences changEnableVolumekeys; value = ", this.enableVolumekeysModel.value);
     Main.enableVolumekeys = this.enableVolumekeysModel.value;
     this.logInfo("Main.enableVolumekeys = ", Main.enableVolumekeys);
+}
+
+
+PreferencesAssistant.prototype.changeUseMouse = function(event) {
+    // event triggerd by user: value changed
+    this.logInfo("Preferences changeUseMouse; value = ", this.useMouseModel.value);
+    Main.useMouse = this.useMouseModel.value;
+    this.logInfo("Main.useMouse = ", Main.useMouse);
 }
 
 
@@ -83,6 +100,7 @@ PreferencesAssistant.prototype.activate = function(event) {
     this.controller.listen("debugToggle", Mojo.Event.propertyChange, this.changeDebugHandler);
     this.controller.listen("enableVolumekeys", Mojo.Event.propertyChange, this.changeEnableVolumekeysHandler);
     this.controller.listen("inhibitPowerOff", Mojo.Event.propertyChange, this.changeInhibitPowerOffHandler);
+    this.controller.listen("useMouse", Mojo.Event.propertyChange, this.useMouseHandler);
 }
 
 
@@ -97,6 +115,8 @@ PreferencesAssistant.prototype.cleanup = function(event) {
 				  this.changeEnableVolumekeysHandler);
     this.controller.stopListening("inhibitPowerOff", Mojo.Event.propertyChange, 
 				  this.changeInhibitPowerOffHandler);
+    this.controller.stopListening("useMouse", Mojo.Event.propertyChange, 
+				  this.useMouseHandler);
     
 }
 

@@ -22,70 +22,67 @@ RemotecontrolAssistant.prototype.setup = function() {
 
     this.logInfo("Remote host address is: " + this.remotehost);
 
-    // Bind handler's "this" to our "this"
+    // Bind handler's "this" to our "that"
     var that=this;
 
     // This number is prepended to the log entries
     this.logOutputNum = 0;
 
-    // Input with special key codes
-    this.specialKeys = { 8: "bkspc", 32: "space", "volume_up" : "pgup", "volume_down" : "pgdn" };
-
     // Store all inputElements (Buttons + Keypress stuff) in a list for later operations (disable, enable)
     this.inputElements = [];
 
     // Setup all buttons
-    this.upButtonModel = {
-	label : "Up",
+    this.button_1_Model = {
+	label : "Page-Up",
 	disabled: true
     };
-    this.dnButtonModel = {
-	label : "Down",
+    this.button_2_Model = {
+	label : "Page-Down",
 	disabled: true
     };
-    this.alttabButtonModel = {
+    this.button_3_Model = {
 	label : "Alt-Tab",
 	disabled: true
     };
-    this.enterButtonModel = {
+    this.button_4_Model = {
 	label : "Enter",
 	disabled: true
     };
-    this.controller.setupWidget("upButton",
+    this.controller.setupWidget("button_1_el",
 				this.attributes = {},
-				this.model = this.upButtonModel
+				this.model = this.button_1_Model
 			       );
-    this.controller.setupWidget("dnButton",
+    this.controller.setupWidget("button_2_el",
 				this.attributes = {},
-				this.model = this.dnButtonModel
+				this.model = this.button_2_Model
 			       );
-    this.controller.setupWidget("alttabButton",
+    this.controller.setupWidget("button_3_el",
 				this.attributes = {},
-				this.model = this.alttabButtonModel
+				this.model = this.button_3_Model
 			       );
-    this.controller.setupWidget("enterButton",
+    this.controller.setupWidget("button_4_el",
 				this.attributes = {},
-				this.model = this.enterButtonModel
+				this.model = this.button_4_Model
 			       );
 
     this.handleTap = this.handleTap.bindAsEventListener(this);
     this.handleKeypress = this.handleKeypress.bindAsEventListener(this);
 
     // Store input elements and their event, handlers for later use
-    this.inputElements.push({ element: this.controller.get("upButton"), 
-			      model: this.upButtonModel,
+    this.inputElements.push({ element: this.controller.get("button_1_el"), 
+			      model: this.button_1_Model,
 			      handler: this.handleTap,
 			      event: Mojo.Event.tap});
-    this.inputElements.push({ element: this.controller.get("dnButton"), 
-			      model: this.dnButtonModel,
+    this.inputElements.push({ element: this.controller.get("button_2_el"), 
+			      model: this.button_2_Model,
 			      handler: this.handleTap,
 			      event: Mojo.Event.tap});
-    this.inputElements.push({ element: this.controller.get("alttabButton"), 
-			      model: this.alttabButtonModel,
+    this.inputElements.push({ element: this.controller.get("button_3_el"), 
+			      model: this.button_3_Model,
 			      handler: this.handleTap,
 			      event: Mojo.Event.tap});
-    this.inputElements.push({ element: this.controller.get("enterButton"), 
-			      model: this.enterButtonModel,
+    this.inputElements.push({ element: this.controller.get("button_4_el"), 
+			      model: this.button_4_Model,
 			      handler: this.handleTap,
 			      event: Mojo.Event.tap});
 
@@ -123,7 +120,7 @@ RemotecontrolAssistant.prototype.setup = function() {
 	onSuccess : function (r){ that.logInfo("Audio keys: results=" + 
 					       JSON.stringify(r)); 
 				  if ((r.state == "down") && (Main.enableVolumekeys === true)) {
-				      var charval = that.specialKeys[r.key] + "\n";
+				      var charval = Main.specialKeys[r.key] + "\n";
 				      that.writePort(charval);
 				  }
 				},
@@ -169,19 +166,17 @@ RemotecontrolAssistant.prototype.handleTap = function(event) {
     /* The user tapped on one of the buttons -> send an artificial
      * code to the remote host */
 
-    this.logInfo("handleTap: " + event);
-    // check if the source element name matches one of our button names
-    if (event.srcElement.id.indexOf("up") != -1) {
-	this.writePort("pgup\n");
-    } else if (event.srcElement.id.indexOf("dn") != -1) {
-	this.writePort("pgdn\n");
-    } else if (event.srcElement.id.indexOf("alttab") != -1) {
-	this.writePort("alttab\n");
-    } else if (event.srcElement.id.indexOf("enter") != -1) {
-	this.writePort("enter\n");
-    }
-};
-
+    this.logInfo("handleTap: " + event.srcElement.id);
+    var button_start = event.srcElement.id.indexOf("button");
+    if (button_start != -1) {
+	// Let's assume there are not more than 10 of these buttons ..
+	var elementId = event.srcElement.id.slice(button_start, button_start + 11);
+	this.logInfo("elementId: " + elementId);
+	this.writePort(Main.specialKeys[elementId] + "\n");
+    } else {
+	this.logInfo("Unknown element: " + event.srcElement.id);
+    };
+}
 
 RemotecontrolAssistant.prototype.handleKeypress = function(event) {
     /* Called if a key on the keyboard got pressed. Send the keycode
@@ -190,7 +185,7 @@ RemotecontrolAssistant.prototype.handleKeypress = function(event) {
     this.logInfo("handleKeypress: " + event.originalEvent.which + " --> " + 
 		 String.fromCharCode(event.originalEvent.which));
     var which = event.originalEvent.which;
-    var charval = this.specialKeys[which] || String.fromCharCode(which);
+    var charval = Main.specialKeys[which] || String.fromCharCode(which);
     this.writePort(charval + "\n");
 };
 
