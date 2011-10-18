@@ -15,7 +15,7 @@ def add_ascii_keys(keys):
 def get_app_controller(app=None):
     if sys.platform == "darwin":
         return MacAppController(app=app)
-    if sys.platform == "win":
+    if sys.platform == "win32":
         import win32com.client
         return WinAppController(app=app)
     else:
