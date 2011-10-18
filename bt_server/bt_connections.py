@@ -78,7 +78,7 @@ def get_port():
 
             # Ask the user for COM port number. PySerial counts them zero-based, so
             # subtract one (1) from that.
-            portnum = int(input("Enter the virtual COM port number for your Bluetooth device: ")) - 1
+            portnum = int(raw_input("Enter the virtual COM port number for your Bluetooth device: ")) - 1
             port = BluetoothSerialport(portnum)
 
     return port
