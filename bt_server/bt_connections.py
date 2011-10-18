@@ -57,7 +57,9 @@ def get_port():
     if sys.platform == "darwin":
         # MacOS X uses always the serial port
         import serial
-        bluetooth_device = raw_input("Enter the  Bluetooth device: ")
+        
+        bluetooth_device = raw_input("Enter the  Bluetooth device: [/dev/tty.Bluetooth-PDA-Sync] ")
+        if not bluetooth_device or bluetooth_device == "": bluetooth_device = "/dev/tty.Bluetooth-PDA-Sync"
         port = BluetoothSerialport(bluetooth_device)
         
     else:
