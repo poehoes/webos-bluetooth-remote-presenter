@@ -2,10 +2,16 @@ import string
 import sys
 import serial
 
+try:
+    # Available for Windows, and works on Windows 7 only, apparently
+    from bluetooth import BluetoothSocket, RFCOMM, PORT_ANY, advertise_service, SERIAL_PORT_CLASS, SERIAL_PORT_PROFILE
+except:
+    pass
+
 class BluetoothRfcomm:
     def __init__(self):
         self.server_sock = BluetoothSocket( RFCOMM )
-        self.server_sock.bind(("",PORT_ANY))
+        self.server_sock.bind(("", PORT_ANY))
         self.server_sock.listen(1)
         port = self.server_sock.getsockname()[1]
 
@@ -56,8 +62,6 @@ def get_port():
     
     if sys.platform == "darwin":
         # MacOS X uses always the serial port
-        import serial
-        
         bluetooth_device = raw_input("Enter the  Bluetooth device: [/dev/tty.Bluetooth-PDA-Sync] ")
         if not bluetooth_device or bluetooth_device == "": bluetooth_device = "/dev/tty.Bluetooth-PDA-Sync"
         port = BluetoothSerialport(bluetooth_device)
@@ -66,10 +70,8 @@ def get_port():
         # For Windows (Linux?)
         # First, try RFCOMM using the PyBluez module. This seems to work on Windows 7 (and up) only.
         try:
-            from bluetooth import BluetoothSocket, RFCOMM, PORT_ANY, advertise_service, SERIAL_PORT_CLASS, SERIAL_PORT_PROFILE
             port = BluetoothRfcomm()
         except:
-            import serial
             # Fallback is "Bluetooth over virtual serial port", as it is more difficult to setup
             # (need for a virtual COM port, and user needs to know that
             # port number). This needs the PySerial module.

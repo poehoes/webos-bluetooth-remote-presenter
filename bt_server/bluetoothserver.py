@@ -1,5 +1,3 @@
-import string
-import sys
 import app_controller
 import bt_connections
 

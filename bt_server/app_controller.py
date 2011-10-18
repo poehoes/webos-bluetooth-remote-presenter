@@ -73,8 +73,8 @@ class WinAppController(object):
             # To set the focus on "app"
             self.shell.AppActivate(self.app)
         if self.keymap.has_key(key):
-            print "Sending '%s' to application" % (self.keymap[key],)
-            self.shell.SendKeys(self.keymap[key])
+            # print "Sending '%s' to application" % (self.keymap[key].keycode,)
+            self.shell.SendKeys(self.keymap[key].keycode)
         else:
             print "No key mapping found for '%s'" % (key,)
 
