@@ -55,6 +55,8 @@ class MacAppController(object):
 
 class WinAppController(object):
     def __init__(self, app=None):
+        import win32com
+        
         self.app = app
         self.shell = win32com.client.Dispatch("WScript.Shell")
         self.keymap = { 'pgdn': Keycode('{PGDN}', ""), 
