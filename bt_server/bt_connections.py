@@ -1,10 +1,15 @@
 import string
 import sys
-import serial
 
 try:
-    # Available for Windows, and works on Windows 7 only, apparently
+    # On Mac and older WIndows machines RFCOMM might not be supported
     from bluetooth import BluetoothSocket, RFCOMM, PORT_ANY, advertise_service, SERIAL_PORT_CLASS, SERIAL_PORT_PROFILE
+except:
+    pass
+
+try:
+    # On Windows machines with RFCOMM support there might be no serial module
+    import serial
 except:
     pass
 
