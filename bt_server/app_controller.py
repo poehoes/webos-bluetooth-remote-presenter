@@ -41,7 +41,7 @@ class MacAppController(object):
             try:
                 int(self.keymap[key].keycode)
                 key_press = ' key code %s' % (self.keymap[key].keycode,)
-            except:
+            except: # keycode not an integer -> use keystroke
                 key_press = ' keystroke "%s"' % (self.keymap[key].keycode,) 
                 
             cmd = """
