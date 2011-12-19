@@ -15,11 +15,43 @@ def add_ascii_keys(keys):
 def get_app_controller(app=None):
     if sys.platform == "darwin":
         return MacAppController(app=app)
+    if sys.platform == "linux2":
+        return LinuxAppController(app=app)
     if sys.platform == "win32":
         import win32com.client
         return WinAppController(app=app)
     else:
         raise Exception("Unsupported platform %s" % (sys.platform))
+
+class LinuxAppController(object):
+    def __init__(self, app=None):
+        import virtkey
+
+        self.keyEmulator = virtkey.virtkey()
+        self.app = app
+        self.keymap = { 'pgdn': 0xFF9B,
+                        'pgup': 0xFF9A,
+                        'alttab': 0xFF09, 
+                        'bkspc': 0xFF08, 
+                        'space': 0xFF80,
+                        '@': 0x040,
+                        'enter': 0xFF8D}
+        
+    def send_key(self, key):        
+        if self.keymap.has_key(key):
+            if key in ['alttab']:
+                self.keyEmulator.latch_mod((1 << 3))
+            self.keyEmulator.press_keysym(self.keymap[key])
+            self.keyEmulator.release_keysym(self.keymap[key])
+            if key in ['alttab']:
+                self.keyEmulator.press_keysym(0xFFE9)
+                self.keyEmulator.release_keysym(0xFFE9)
+        else: 
+            try:
+                self.keyEmulator.press_unicode(ord(key))
+                self.keyEmulator.release_unicode(ord(key))
+            except:
+                print "No key mapping found for '%s'" % (key,)
 
 
 class MacAppController(object):
