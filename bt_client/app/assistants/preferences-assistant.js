@@ -30,14 +30,32 @@ PreferencesAssistant.prototype.setup = function() {
 				this.useMouseModel = {
 				    value: Main.useMouse
 				});
+    
+    this.selectorChoices = [];
+    this.selectorChoices.push({label: "<nothing>", value: ""});
+    this.selectorChoices.push({label: "Enter", value: "enter"});
+    this.selectorChoices.push({label: "Page Up", value: "pgup"});
+    this.selectorChoices.push({label: "Page Down", value: "pgdn"});
+    this.selectorChoices.push({label: "Alt-Tab", value: "alttab"});
+    
+    this.ForwardModel = {value: Main.forwardEvent, choices: this.selectorChoices}; 
+    this.selectorAttributes = {label: 'Fwd swipe key', modelProperty:'value' };
+    this.controller.setupWidget("forwardSelector", this.selectorAttributes, this.ForwardModel);
 
 
     this.changeDebugHandler = this.changeDebug.bindAsEventListener(this);
     this.changeEnableVolumekeysHandler = this.changeEnableVolumekeys.bindAsEventListener(this);
     this.changeInhibitPowerOffHandler = this.changeInhibitPowerOff.bindAsEventListener(this);
     this.useMouseHandler = this.changeUseMouse.bindAsEventListener(this);
+    this.forwardActionHandler = this.changeForwardAction.bindAsEventListener(this);
 }
 
+PreferencesAssistant.prototype.changeForwardAction = function(event) {
+    // event triggerd by user: value changed
+    //Mojo.Log.info("Preferences changeForwardAction; value = ", this.ForwardModel.value);
+    Main.forwardEvent = this.ForwardModel.value;
+    //Mojo.Log.info("Main.ForwardAction = ", Main.forwardEvent);
+}
 
 PreferencesAssistant.prototype.changeDebug = function(event) {
     // event triggerd by user: value changed
@@ -98,6 +116,7 @@ PreferencesAssistant.prototype.activate = function(event) {
 	this.controller.get('log-output').innerHTML = "";
     }
     this.controller.listen("debugToggle", Mojo.Event.propertyChange, this.changeDebugHandler);
+    this.controller.listen("forwardSelector", Mojo.Event.propertyChange, this.forwardActionHandler);
     this.controller.listen("enableVolumekeys", Mojo.Event.propertyChange, this.changeEnableVolumekeysHandler);
     this.controller.listen("inhibitPowerOff", Mojo.Event.propertyChange, this.changeInhibitPowerOffHandler);
     this.controller.listen("useMouse", Mojo.Event.propertyChange, this.useMouseHandler);
@@ -111,6 +130,8 @@ PreferencesAssistant.prototype.deactivate = function(event) {
 PreferencesAssistant.prototype.cleanup = function(event) {
     this.controller.stopListening("debugToggle", Mojo.Event.propertyChange, 
 				  this.changeDebugHandler);
+    this.controller.stopListening("forwardSelector", Mojo.Event.propertyChange, 
+			  this.changeForwardAction);
     this.controller.stopListening("enableVolumekeys", Mojo.Event.propertyChange, 
 				  this.changeEnableVolumekeysHandler);
     this.controller.stopListening("inhibitPowerOff", Mojo.Event.propertyChange, 

@@ -91,6 +91,9 @@ RemotecontrolAssistant.prototype.setup = function() {
 			      handler: this.handleKeypress,
 			      event: Mojo.Event.keypress});
 
+    boundHandleKeydown = this.handleKeydown.bindAsEventListener(this);
+    this.controller.document.addEventListener("keydown", boundHandleKeydown, true);
+    
     this.logInfo("InputElements length: " + this.inputElements.length);
     this.logInfo("InputElements: " + this.inputElements);
     this.controller.setupWidget(Mojo.Menu.appMenu,
@@ -131,13 +134,29 @@ RemotecontrolAssistant.prototype.setup = function() {
 
 
 RemotecontrolAssistant.prototype.handleCommand = function(event) {
-    this.logInfo("Preferences event: " + event); 
-    if (event.type === Mojo.Event.command) {
-	switch (event.command) {
-	case 'preferences':
-	    this.controller.stageController.pushScene("preferences");
-	    break;
-	}
+    this.logInfo("Command event: " + event); 
+    switch (event.type) {
+    case Mojo.Event.command:
+    	switch (event.command) {
+    	case 'preferences':
+    	    this.logInfo("Tap on Preferences");
+    	    this.controller.stageController.pushScene("preferences");
+    	    break;
+    	}
+    	break;
+    case Mojo.Event.forward:
+    	this.logInfo("Forward gesture");
+    	if (Main.forwardEvent == "") {
+    	    
+    	} else {
+    	    this.writePort(Main.forwardEvent + "\n");
+    	}
+    	break;
+    case Mojo.Event.back:
+    	this.logInfo("back gesture");
+    	//event.preventdefault();
+    	break;
+    	
     }
 }
 
@@ -178,6 +197,14 @@ RemotecontrolAssistant.prototype.handleTap = function(event) {
     };
 }
 
+RemotecontrolAssistant.prototype.handleKeydown = function(event) {
+    /* Called when a keydown-event is send */
+
+    this.logInfo("handleKeydown: " + event.which);
+    if (event.which == 13)
+	this.writePort("enter"+ "\n");
+};
+
 RemotecontrolAssistant.prototype.handleKeypress = function(event) {
     /* Called if a key on the keyboard got pressed. Send the keycode
      * as a string to the remote host */
@@ -213,9 +240,9 @@ RemotecontrolAssistant.prototype.writePort = function(msg){
         parameters: {"instanceId": this.instanceId,
 		     "dataLength": msg.length, 
 		     "data": msg},
-        onSuccess: function(objData) { 
-	    this.logInfo("Write Success: "+objData.returnValue);
-	},
+        onSuccess: function(objData) { specialKeyssspecialKeysspecialKeyspecialKeys
+				       this.logInfo("Write Success: "+objData.returnValue);
+				     },
         onFailure: function(failData) {
             this.logInfo("Unable to write to SPP Port, errCode: " + 
 			 failData.errorCode + "<br/>"+ failData.errorText);
@@ -277,13 +304,14 @@ RemotecontrolAssistant.prototype.disconnectSPP = function() {
 RemotecontrolAssistant.prototype.disableAllInput = function(val) {
     this.logInfo("in disableAllInput(" + val + ")");
     var that = this; // scope this
+    
     for (var i = 0; i < this.inputElements.length; i++) {
 	var current = this.inputElements[i];
 
 	// Disable the UI
 	current.model.disabled = val;
 	this.controller.modelChanged(current.model);
-
+	
 	// Start /stop listening for events
 	if (val == true) {
 	    this.controller.stopListening(current.element, current.event, current.handler);
@@ -291,6 +319,9 @@ RemotecontrolAssistant.prototype.disableAllInput = function(val) {
 	    this.controller.listen(current.element, current.event, current.handler);
 	}
     }
+    
+    boundHandleKeydown = this.handleKeydown.bindAsEventListener(this);
+    this.controller.document.removeEventListener("keydown", boundHandleKeydown, true);
 }
 
 

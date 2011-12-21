@@ -12,7 +12,8 @@ Main={debugEnable: false,
 		     "button_1_el": "pgup", 
 		     "button_2_el": "pgdn",
 		     "button_3_el": "alttab",
-		     "button_4_el": "enter"}
+		     "button_4_el": "enter"},
+	  forwardEvent: ""
 };
 
 MainAssistant.prototype.setup = function() {
