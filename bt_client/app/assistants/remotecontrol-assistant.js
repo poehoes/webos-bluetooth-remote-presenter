@@ -240,8 +240,8 @@ RemotecontrolAssistant.prototype.writePort = function(msg){
 		     "dataLength": msg.length, 
 		     "data": msg},
         onSuccess: function(objData) {
-				    this.logInfo("Write Success: "+objData.returnValue);
-				},
+	    this.logInfo("Write Success: "+objData.returnValue);
+	},
         onFailure: function(failData) {
             this.logInfo("Unable to write to SPP Port, errCode: " + 
 			 failData.errorCode + "<br/>"+ failData.errorText);

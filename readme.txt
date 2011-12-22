@@ -9,11 +9,11 @@ Mac OS X (must be a 32bit Python binary - (10.6 has a 64bit by default):
 
 build client:
 
-palm_build bt_client
+palm-package bt_client
 
 
 
 install client:
 
-palm_install *.ipk
+palm-install *.ipk
 
