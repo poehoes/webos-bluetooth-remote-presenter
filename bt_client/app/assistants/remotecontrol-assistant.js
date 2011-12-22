@@ -1,4 +1,3 @@
-
 function RemotecontrolAssistant(remotehost) {
     /* this is the creator function for your scene assistant object. It will be passed all the 
        additional parameters (after the scene name) that were passed to pushScene. The reference
@@ -240,9 +239,9 @@ RemotecontrolAssistant.prototype.writePort = function(msg){
         parameters: {"instanceId": this.instanceId,
 		     "dataLength": msg.length, 
 		     "data": msg},
-        onSuccess: function(objData) { specialKeyssspecialKeysspecialKeyspecialKeys
-				       this.logInfo("Write Success: "+objData.returnValue);
-				     },
+        onSuccess: function(objData) {
+				    this.logInfo("Write Success: "+objData.returnValue);
+				},
         onFailure: function(failData) {
             this.logInfo("Unable to write to SPP Port, errCode: " + 
 			 failData.errorCode + "<br/>"+ failData.errorText);
