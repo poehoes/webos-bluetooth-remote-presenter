@@ -31,10 +31,10 @@ class LinuxAppController(object):
         self.app = app
         self.keymap = { 'pgdn': 0xFF9B,
                         'pgup': 0xFF9A,
-                        'crup': 0xFF9A,
-                        'crdn': 0xFF9A,
-                        'crlt': 0xFF9A,
-                        'crrt': 0xFF9A,
+                        'crup': 0xFFAA, # FIXME
+                        'crdn': 0xFFAA, # FIXME
+                        'crlt': 0xFFAA, # FIXME
+                        'crrt': 0xFFAA, # FIXME
                         'alttab': 0xFF09, 
                         'bkspc': 0xFF08, 
                         'space': 0xFF80,
