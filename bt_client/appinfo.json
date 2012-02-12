@@ -1,0 +1,9 @@
+{
+	"id": "com.henschkowski.app.bluetoothpresenter",
+	"version": "1.0.4",
+	"vendor": "Ralf Henschkowski",
+	"type": "web",
+	"main": "index.html",
+	"title": "Bluetooth Presenter",
+	"icon": "remote_bt_6464.png"
+}

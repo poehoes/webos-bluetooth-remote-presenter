@@ -1,0 +1,15 @@
+[
+    {"source": "app/assistants/stage-assistant.js"},
+    {
+        "scenes": "main",
+        "source": "app/assistants/main-assistant.js"
+    },
+    {
+        "scenes": "preferences",
+        "source": "app/assistants/preferences-assistant.js"
+    },
+    {
+        "scenes": "remotecontrol",
+        "source": "app/assistants/remotecontrol-assistant.js"
+    }
+]
