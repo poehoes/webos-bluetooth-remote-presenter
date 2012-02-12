@@ -234,14 +234,18 @@ PreferencesAssistant.prototype.cleanup = function(event) {
 				  this.changeDebugHandler);
     this.controller.stopListening("forwardSelector", Mojo.Event.propertyChange, 
 				  this.changeForwardAction);
-    // this.controller.stopListening("button1Selector", Mojo.Event.propertyChange, 
-    // 				  this.changeButton1Action);
-    // this.controller.stopListening("button2Selector", Mojo.Event.propertyChange, 
-    // 				  this.changeButton2Action);
-    // this.controller.stopListening("button3Selector", Mojo.Event.propertyChange, 
-    // 				  this.changeButton3Action);
-    // this.controller.stopListening("button4Selector", Mojo.Event.propertyChange, 
-    // 				  this.changeButton4Action);
+    this.controller.stopListening("button1Selector", Mojo.Event.propertyChange, 
+    				  this.changeButton1Action);
+    this.controller.stopListening("button2Selector", Mojo.Event.propertyChange, 
+    				  this.changeButton2Action);
+    this.controller.stopListening("button3Selector", Mojo.Event.propertyChange, 
+    				  this.changeButton3Action);
+    this.controller.stopListening("button4Selector", Mojo.Event.propertyChange, 
+    				  this.changeButton4Action);
+    this.controller.stopListening("volumeUpSelector", Mojo.Event.propertyChange, 
+    				  this.volumeUpActionHandler);
+    this.controller.stopListening("volumeDnSelector", Mojo.Event.propertyChange, 
+    				  this.volumeDnActionHandler);
     this.controller.stopListening("enableVolumekeys", Mojo.Event.propertyChange, 
 				  this.changeEnableVolumekeysHandler);
     this.controller.stopListening("inhibitPowerOff", Mojo.Event.propertyChange, 
