@@ -30,21 +30,21 @@ RemotecontrolAssistant.prototype.setup = function() {
     // Store all inputElements (Buttons + Keypress stuff) in a list for later operations (disable, enable)
     this.inputElements = [];
 
-    // Setup all buttons
+    // Setup all on-screen buttons
     this.button_1_Model = {
-	label : "Page-Up",
+	label : Main.specialKeys["button_1_el"].label,
 	disabled: true
     };
     this.button_2_Model = {
-	label : "Page-Down",
+	label : Main.specialKeys["button_2_el"].label,
 	disabled: true
     };
     this.button_3_Model = {
-	label : "Alt-Tab",
+	label : Main.specialKeys["button_3_el"].label,
 	disabled: true
     };
     this.button_4_Model = {
-	label : "Enter",
+	label : Main.specialKeys["button_4_el"].label,
 	disabled: true
     };
     this.controller.setupWidget("button_1_el",
@@ -122,7 +122,7 @@ RemotecontrolAssistant.prototype.setup = function() {
 	onSuccess : function (r){ that.logInfo("Audio keys: results=" + 
 					       JSON.stringify(r)); 
 				  if ((r.state == "down") && (Main.enableVolumekeys === true)) {
-				      var charval = Main.specialKeys[r.key] + "\n";
+				      var charval = Main.specialKeys[r.key].code + "\n";
 				      that.writePort(charval);
 				  }
 				},
@@ -145,10 +145,10 @@ RemotecontrolAssistant.prototype.handleCommand = function(event) {
     	break;
     case Mojo.Event.forward:
     	this.logInfo("Forward gesture");
-    	if (Main.forwardEvent == "") {
+    	if (Main.specialKeys["forwardEvent"].code == "<nothing>") {
     	    
     	} else {
-    	    this.writePort(Main.forwardEvent + "\n");
+    	    this.writePort(Main.specialKeys["forwardEvent"].code + "\n");
     	}
     	break;
     case Mojo.Event.back:
@@ -190,7 +190,7 @@ RemotecontrolAssistant.prototype.handleTap = function(event) {
 	// Let's assume there are not more than 10 of these buttons ..
 	var elementId = event.srcElement.id.slice(button_start, button_start + 11);
 	this.logInfo("elementId: " + elementId);
-	this.writePort(Main.specialKeys[elementId] + "\n");
+	this.writePort(Main.specialKeys[elementId].code + "\n");
     } else {
 	this.logInfo("Unknown element: " + event.srcElement.id);
     };
@@ -211,7 +211,12 @@ RemotecontrolAssistant.prototype.handleKeypress = function(event) {
     this.logInfo("handleKeypress: " + event.originalEvent.which + " --> " + 
 		 String.fromCharCode(event.originalEvent.which));
     var which = event.originalEvent.which;
-    var charval = Main.specialKeys[which] || String.fromCharCode(which);
+    var charval = "";
+    if (Main.specialKeys[which]) {
+	charval = Main.specialKeys[which].code;
+    } else {
+	charval = String.fromCharCode(which);
+    }
     this.writePort(charval + "\n");
 };
 

@@ -5,22 +5,24 @@ Main={debugEnable: false,
       enableVolumekeys: true, 
       inhibitPowerOff: true, 
       useMouse: false,     
-      specialKeys: { 8: "bkspc", 
-		     32: "space", 
-		     "volume_up": "pgup", 
-		     "volume_down": "pgdn", 
-		     "button_1_el": "pgup", 
-		     "button_2_el": "pgdn",
-		     "button_3_el": "alttab",
-		     "button_4_el": "enter"},
-	  forwardEvent: ""
-};
+      
+      // Values for the various buttons are just the defaults
+      specialKeys: { 8: {code: "bkspc", label: "Backspace"},
+      		     32: {code: "space", label: "Space"}, 
+      		     "volume_up": {code: "pgup", label: "Page-Up"}, 
+      		     "volume_down": {code: "pgdn", label: "Page-Down"}, 
+      		     "button_1_el": {code: "crup", label: "Cursor Up"},
+      		     "button_2_el": {code: "crdn", label: "Cursor Down"},
+      		     "button_3_el": {code: "alttab", label: "Alt-Tab"},
+      		     "button_4_el": {code: "enter", label: "Enter"},
+      		     "forwardEvent": {code: "<nothing>", label: "<nothing>"}
+		   }
+     };
 
 MainAssistant.prototype.setup = function() {
     this.logOutputNum=0; //display log number increment
     this.logInfo("Starting App");  //log info method will print logs to device screen
     
-
     this.controller.setupWidget("refreshButton",
 				this.attributes = {},
 				this.model = {

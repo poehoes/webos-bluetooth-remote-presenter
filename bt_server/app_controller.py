@@ -31,6 +31,10 @@ class LinuxAppController(object):
         self.app = app
         self.keymap = { 'pgdn': 0xFF9B,
                         'pgup': 0xFF9A,
+                        'crup': 0xFF9A,
+                        'crdn': 0xFF9A,
+                        'crlt': 0xFF9A,
+                        'crrt': 0xFF9A,
                         'alttab': 0xFF09, 
                         'bkspc': 0xFF08, 
                         'space': 0xFF80,
@@ -59,6 +63,10 @@ class MacAppController(object):
         self.app = app
         self.keymap = { 'pgdn': Keycode(121, ""),
                         'pgup': Keycode(116, ""),
+                        'crup': Keycode(126, ""),
+                        'crdn': Keycode(125, ""),
+                        'crlt': Keycode(123, ""),
+                        'crrt': Keycode(124, ""),
                         'alttab': Keycode(48, " using command down "), 
                         'bkspc': Keycode(51, ""), 
                         'space': Keycode(49, ""),
@@ -93,6 +101,10 @@ class WinAppController(object):
         self.shell = win32com.client.Dispatch("WScript.Shell")
         self.keymap = { 'pgdn': Keycode('{PGDN}', ""), 
                         'pgup': Keycode('{PGUP}', ""), 
+                        'crup': Keycode('{UP}', ""), 
+                        'crdn': Keycode('{DOWN}', ""), 
+                        'crlt': Keycode('{LEFT}', ""), 
+                        'crrt': Keycode('{RIGHT}', ""), 
                         'alttab': Keycode('%{TAB}', ""),  
                         'bkspc': Keycode('{BS}', ""), 
                         'space': Keycode(' ', ""),
