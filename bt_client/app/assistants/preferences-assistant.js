@@ -226,6 +226,9 @@ PreferencesAssistant.prototype.activate = function(event) {
 
 
 PreferencesAssistant.prototype.deactivate = function(event) {
+    // save preferences to cookie
+    var specialKeysCookie = new Mojo.Model.Cookie('specialkeys');
+    specialKeysCookie.put(Main.specialKeys);
 }
 
 
