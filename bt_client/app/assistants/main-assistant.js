@@ -60,6 +60,16 @@ MainAssistant.prototype.setup = function() {
 					{ label: "Preferences...", command: 'preferences' },
 				    ]
 				}); 
+    // Load preferences from cookie
+    var specialKeysCookie = new Mojo.Model.Cookie('specialkeys');
+    var specialKeys = specialKeysCookie.get();
+    if (specialKeys !== undefined) {
+	this.logInfo("Preferences found: " + specialKeys); 
+	Main.specialKeys = specialKeys;
+    } else {
+	// else: there are default values
+	this.logInfo("No preferences found, using default values" );
+    }    
 }
 
 
