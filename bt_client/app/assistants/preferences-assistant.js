@@ -41,7 +41,20 @@ PreferencesAssistant.prototype.setup = function() {
 	"crdn": "Cursor Down",
 	"crlt": "Cursor Left",
 	"crrt": "Cursor Right",
-	"alttab": "Alt-Tab"
+	"alttab": "Alt-Tab",
+	"esc": "Escape",
+	"f1": "F1",
+	"f2": "F2",
+	"f3": "F3",
+	"f4": "F4",
+	"f5": "F5",
+	"f6": "F6",
+	"f7": "F7",
+	"f8": "F8",
+	"f9": "F9",
+	"f10": "F10",
+	"f11": "F11",
+	"f12": "F12",
     };
 
 
@@ -56,6 +69,19 @@ PreferencesAssistant.prototype.setup = function() {
     this.selectorChoices.push({label: this.displayMapping["crlt"], value: "crlt"});
     this.selectorChoices.push({label: this.displayMapping["crrt"], value: "crrt"});
     this.selectorChoices.push({label: this.displayMapping["alttab"], value: "alttab"});
+    this.selectorChoices.push({label: this.displayMapping["esc"], value: "esc"});
+    this.selectorChoices.push({label: this.displayMapping["f1"], value: "f1"});
+    this.selectorChoices.push({label: this.displayMapping["f2"], value: "f2"});
+    this.selectorChoices.push({label: this.displayMapping["f3"], value: "f3"});
+    this.selectorChoices.push({label: this.displayMapping["f4"], value: "f4"});
+    this.selectorChoices.push({label: this.displayMapping["f5"], value: "f5"});
+    this.selectorChoices.push({label: this.displayMapping["f6"], value: "f6"});
+    this.selectorChoices.push({label: this.displayMapping["f7"], value: "f7"});
+    this.selectorChoices.push({label: this.displayMapping["f8"], value: "f8"});
+    this.selectorChoices.push({label: this.displayMapping["f9"], value: "f9"});
+    this.selectorChoices.push({label: this.displayMapping["f10"], value: "f10"});
+    this.selectorChoices.push({label: this.displayMapping["f11"], value: "f11"});
+    this.selectorChoices.push({label: this.displayMapping["f12"], value: "f12"});
     
     // Setup "forward-swipe" action
     this.ForwardModel = {value: Main.specialKeys["forwardEvent"].code, choices: this.selectorChoices}; 
