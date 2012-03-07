@@ -71,6 +71,7 @@ class MacAppController(object):
                         'bkspc': Keycode(51, ""), 
                         'space': Keycode(49, ""),
                         '@': Keycode(100, ""),
+                        'esc': Keycode(53, ""),
                         'enter': Keycode(36, "")}
         self.keymap = add_ascii_keys(self.keymap)
         # Add function keys
