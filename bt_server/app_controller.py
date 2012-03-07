@@ -73,7 +73,9 @@ class MacAppController(object):
                         '@': Keycode(100, ""),
                         'enter': Keycode(36, "")}
         self.keymap = add_ascii_keys(self.keymap)
-        
+        # Add function keys
+        self.keymap.update(dict( [ ("f%d"%(k,), Keycode("F%d"%(k,), "")) for k in range(1,13)])) 
+
     def send_key(self, key):        
         if self.keymap.has_key(key):
             # print "Sending '%s' to application" % (self.keymap[key],)
@@ -109,9 +111,13 @@ class WinAppController(object):
                         'bkspc': Keycode('{BS}', ""), 
                         'space': Keycode(' ', ""),
                         '@': Keycode('@', ""),
-                        'enter': Keycode('{ENTER}', "")}
+                        'enter': Keycode('{ENTER}', ""),
+                        'esc': Keycode('{ESC}', ""),
+                        }
         self.keymap = add_ascii_keys(self.keymap)
-        
+        # Add function keys
+        self.keymap.update(dict([("f%d"%(k,), Keycode("{F%d}"%(k,), "")) for k in range(1,13)])) 
+
     def send_key(self, key):
         if self.app:
             # To set the focus on "app"
