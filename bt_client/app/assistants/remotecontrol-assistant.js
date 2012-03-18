@@ -6,10 +6,13 @@ function RemotecontrolAssistant(remotehost) {
 
     // remote host Bluetooth address is passed down from the main
     // scene
-    this.remotehost = remotehost
+    this.remotehost = remotehost;
 
     //SPP instance object
     this.instanceId=-1;
+    
+    // TIMER unique key for keepalives
+    this.timer_key = "com.henschkowski.app.bluetoothpresenter.timer";
 }
 
 
@@ -223,6 +226,36 @@ RemotecontrolAssistant.prototype.handleKeypress = function(event) {
 RemotecontrolAssistant.prototype.keepAliveTimer = function(){
     this.logInfo("Send keepalive"); 
     this.writePort("keepalive\n");
+    if (Main.enableKeepalive == true) {
+
+	// Set the alarm for the next keepalive message
+	// get the current date & then add 10 seconds
+	var now = new Date((new Date()).getTime());
+	this.logInfo("Now is " + now);
+	var d = new Date((new Date()).getTime() + (10 * 1000));
+	var at = (d.getUTCMonth()+1) +'/'+d.getUTCDate()+'/'+d.getUTCFullYear() + " "+d.getUTCHours()+":"+d.getUTCMinutes()+":"+ (d.getUTCSeconds());
+	this.logInfo("Next keepalive at: " + d);
+	Mojo.Log.error("Keepalive started!");
+	
+	// set a new alarm
+	this.controller.serviceRequest('palm://com.palm.power/timeout', {
+	    method: "set",
+	    parameters: {
+		"wakeup": true,
+		"at": at,
+		"key": this.timer_key,
+		"uri": "palm://com.palm.applicationManager/launch",
+		"params": '{"id":"com.henschkowski.app.bluetoothpresenter", "params":{"message": "alarm!"}}'
+	    },
+	    onSuccess: function(objData) {
+		that.logInfo("Timer registered: " + objData.returnValue);
+	    },
+	    onFailure: function(failData) {
+		that.logInfo("Unable to register keepalive alarm: " + 
+			     failData.errorCode + "<br/>"+ failData.errorText);
+	    }                                                            
+	});
+    }
 };
 
 
@@ -230,6 +263,7 @@ RemotecontrolAssistant.prototype.openWriteReady = function(objData){
     /*
      * Called from open success 
      */
+    var that=this; //used to scope this here.
 
     this.logInfo("openSuccess: " + JSON.stringify(objData));
 
@@ -238,17 +272,49 @@ RemotecontrolAssistant.prototype.openWriteReady = function(objData){
 
     // Start sending keepalives if configured
     if (Main.enableKeepalive == true) {
-	this.logInfo("Keepalives enabled");
-	if (this.interval_id != undefined) {
-	    clearInterval(this.interval_id);
-	}
 	timer_function = this.keepAliveTimer.bind(this)
-	this.interval_id = setInterval(timer_function, 10000);
+	
+	this.logInfo("Keepalives enabled");
+
+	// get the current date & then add 10 seconds
+	var now = new Date((new Date()).getTime());
+	this.logInfo("Now is " + now);
+	var d = new Date((new Date()).getTime() + (10 * 1000));
+	var at = (d.getUTCMonth()+1) +'/'+d.getUTCDate()+'/'+d.getUTCFullYear() + " "+d.getUTCHours()+":"+d.getUTCMinutes()+":"+ (d.getUTCSeconds());
+	this.logInfo("Next keepalive at: " + d);
+	Mojo.Log.error("Keepalive started!");
+
+	// set a new alarm
+	this.controller.serviceRequest('palm://com.palm.power/timeout', {
+	    method: "set",
+	    parameters: {
+		"wakeup": true,
+		"at": at,
+		"key": this.timer_key,
+		"uri": "palm://com.palm.applicationManager/launch",
+		"params": '{"id":"com.henschkowski.app.bluetoothpresenter", "params":{"message": "alarm!"}}'
+	    },
+	    onSuccess: function(objData) {
+		that.logInfo("Timer registered: " + objData.returnValue);
+	    },
+	    onFailure: function(failData) {
+		that.logInfo("Unable to register keepalive alarm: " + 
+			     failData.errorCode + "<br/>"+ failData.errorText);
+	    }                                                            
+	});
     } else {
 	this.logInfo("Keepalives disabled");
-	if (this.interval_id != undefined) {
-	    clearInterval(this.interval_id);
-	}
+	this.controller.serviceRequest('palm://com.palm.power/timeout', {
+	    method: "clear",
+	    parameters: {"key": this.timer_key},
+	    onSuccess: function(objData) {
+		that.logInfo("Timer unregistered: "+objData.returnValue);
+	    },
+	    onFailure: function(failData) {
+		that.logInfo("Unable to unregister keepalive alarm: " + 
+			     failData.errorCode + "<br/>"+ failData.errorText);
+	    }                                                            
+	});
     }
 }
 
@@ -257,7 +323,7 @@ RemotecontrolAssistant.prototype.writePort = function(msg){
     /*
      * Write to the serial port.
      */
-
+    var that = this;
     this.logInfo("SPP Write Port: "+msg);
     this.controller.serviceRequest('palm://com.palm.service.bluetooth.spp', {
         method: "write",
@@ -265,10 +331,10 @@ RemotecontrolAssistant.prototype.writePort = function(msg){
 		     "dataLength": msg.length, 
 		     "data": msg},
         onSuccess: function(objData) {
-	    this.logInfo("Write Success: "+objData.returnValue);
+	    that.logInfo("Write Success: "+objData.returnValue);
 	},
         onFailure: function(failData) {
-            this.logInfo("Unable to write to SPP Port, errCode: " + 
+            that.logInfo("Unable to write to SPP Port, errCode: " + 
 			 failData.errorCode + "<br/>"+ failData.errorText);
         }                                                            
     });
@@ -291,6 +357,7 @@ RemotecontrolAssistant.prototype.closeSPP = function() {
     //  Close serial and spp connection
     if (this.targetAddress !== "" && this.instanceId !== undefined) {
         // Close comm port
+	var that=this; //used to scope this here.
         this.controller.serviceRequest('palm://com.palm.service.bluetooth.spp', {
             method: "close",
             parameters: {"instanceId":this.instanceId},
@@ -435,11 +502,12 @@ RemotecontrolAssistant.prototype.sppNotify = function(objData) {
 
 
 RemotecontrolAssistant.prototype.logInfo = function(logText) {
+    var that = this;
     if(Main.debugEnable === true) {
-	this.controller.get('log-output').innerHTML = "<strong>" +
-	    this.logOutputNum++ + "</strong>: " + logText + 
+	that.controller.get('log-output').innerHTML = "<strong>" +
+	    that.logOutputNum++ + "</strong>: " + logText + 
 	    "<br />" + 
-	    this.controller.get('log-output').innerHTML + 
+	    that.controller.get('log-output').innerHTML + 
 	    "<br /><br />";  
     }
 }
