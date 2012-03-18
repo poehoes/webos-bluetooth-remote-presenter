@@ -220,6 +220,11 @@ RemotecontrolAssistant.prototype.handleKeypress = function(event) {
     this.writePort(charval + "\n");
 };
 
+RemotecontrolAssistant.prototype.keepAliveTimer = function(){
+    this.logInfo("Send keepalive"); 
+    this.writePort("keepalive\n");
+};
+
 
 RemotecontrolAssistant.prototype.openWriteReady = function(objData){
     /*
@@ -230,6 +235,21 @@ RemotecontrolAssistant.prototype.openWriteReady = function(objData){
 
     // Enable all inputElements
     this.disableAllInput(false);
+
+    // Start sending keepalives if configured
+    if (Main.enableKeepalive == true) {
+	this.logInfo("Keepalives enabled");
+	if (this.interval_id != undefined) {
+	    clearInterval(this.interval_id);
+	}
+	timer_function = this.keepAliveTimer.bind(this)
+	this.interval_id = setInterval(timer_function, 10000);
+    } else {
+	this.logInfo("Keepalives disabled");
+	if (this.interval_id != undefined) {
+	    clearInterval(this.interval_id);
+	}
+    }
 }
 
 
