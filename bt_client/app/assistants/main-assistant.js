@@ -4,6 +4,7 @@ function MainAssistant() {}
 Main={debugEnable: false, 
       enableVolumekeys: true, 
       inhibitPowerOff: true, 
+      enableKeepalive: false,
       useMouse: false,     
       
       // Values for the various buttons are just the defaults

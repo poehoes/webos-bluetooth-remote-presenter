@@ -10,6 +10,8 @@ while True:
             print "Waiting for data on client socket..."
             data = port.get_data()
             print "received [%s]" % data
+            if data.startswith("keepalive"):
+                continue
             if len(data) == 0:
                 break
             app.send_key(data)

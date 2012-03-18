@@ -23,6 +23,13 @@ PreferencesAssistant.prototype.setup = function() {
 				    value: Main.inhibitPowerOff
 				});
 
+    // Toggle keepalive feature 
+    this.controller.setupWidget("enableKeepalive",
+				{},
+				this.enableKeepaliveModel = {
+				    value: Main.enableKeepalive
+				});
+
 
     // Toggle sending Mouse events 
     this.controller.setupWidget("useMouse",
@@ -132,6 +139,7 @@ PreferencesAssistant.prototype.setup = function() {
     this.changeDebugHandler = this.changeDebug.bindAsEventListener(this);
     this.changeEnableVolumekeysHandler = this.changeEnableVolumekeys.bindAsEventListener(this);
     this.changeInhibitPowerOffHandler = this.changeInhibitPowerOff.bindAsEventListener(this);
+    this.changeEnableKeepaliveHandler = this.changeEnableKeepalive.bindAsEventListener(this);
     this.useMouseHandler = this.changeUseMouse.bindAsEventListener(this);
     this.forwardActionHandler = this.changeForwardAction.bindAsEventListener(this);
     this.button1ActionHandler = this.changeButton1Action.bindAsEventListener(this);
@@ -206,6 +214,14 @@ PreferencesAssistant.prototype.changeUseMouse = function(event) {
 }
 
 
+PreferencesAssistant.prototype.changeEnableKeepalive = function(event) {
+    // event triggerd by user: value changed
+    this.logInfo("Preferences changEnableKeepalive; value = ", this.enableKeepaliveModel.value);
+    Main.enableKeepalive = this.enableKeepaliveModel.value;
+    this.logInfo("Main.enableKeepalive = ", Main.enableKeepalive);
+}
+
+
 PreferencesAssistant.prototype.changeInhibitPowerOff = function(event) {
     // event triggerd by user: value changed
     var that = this; // scoping of this
@@ -247,6 +263,7 @@ PreferencesAssistant.prototype.activate = function(event) {
     this.controller.listen("volumeDnSelector", Mojo.Event.propertyChange, this.volumeDnActionHandler);
     this.controller.listen("enableVolumekeys", Mojo.Event.propertyChange, this.changeEnableVolumekeysHandler);
     this.controller.listen("inhibitPowerOff", Mojo.Event.propertyChange, this.changeInhibitPowerOffHandler);
+    this.controller.listen("enableKeepalive", Mojo.Event.propertyChange, this.changeEnableKeepaliveHandler);
     this.controller.listen("useMouse", Mojo.Event.propertyChange, this.useMouseHandler);
 }
 
