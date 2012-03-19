@@ -1,1 +1,1 @@
-c:/python26/python bluetoothserver.py
+c:/python26/python bluetoothserver.py %1 
