@@ -7,7 +7,7 @@ if len(sys.argv) > 1:
     try:
         com_port_num = int(sys.argv[1])
     except ValueError:
-        print "Usage: %s <portnumber>" % (sys.argv[0],)
+        print "Usage: %s [<portnumber>]" % (sys.argv[0],)
         sys.exit(1)
 
     
