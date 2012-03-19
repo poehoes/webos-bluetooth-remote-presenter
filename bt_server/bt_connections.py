@@ -60,7 +60,7 @@ class BluetoothSerialport:
         self.port.close()
 
 
-def get_port():
+def get_port(portnum=None):
     port = None
     
     # Select a connection method based on OS and OS version / driver availability
@@ -75,15 +75,20 @@ def get_port():
         # For Windows (Linux?)
         # First, try RFCOMM using the PyBluez module. This seems to work on Windows 7 (and up) only.
         try:
+            if portnum: raise Exception("User wants serial port connection")
             port = BluetoothRfcomm()
         except:
             # Fallback is "Bluetooth over virtual serial port", as it is more difficult to setup
             # (need for a virtual COM port, and user needs to know that
             # port number). This needs the PySerial module.
 
-            # Ask the user for COM port number. PySerial counts them zero-based, so
+            # Ask the user for COM port number if not given on the
+            # command line. PySerial counts them zero-based, so
             # subtract one (1) from that.
-            portnum = int(raw_input("Enter the virtual COM port number for your Bluetooth device: ")) - 1
+            if not portnum:
+                portnum = int(raw_input("Enter the virtual COM port number for your Bluetooth device: ")) - 1
+            else:
+                portnum -= 1
             port = BluetoothSerialport(portnum)
 
     return port

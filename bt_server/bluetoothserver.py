@@ -1,8 +1,18 @@
 import app_controller
 import bt_connections
+import sys
 
+com_port_num=None
+if len(sys.argv) > 1:
+    try:
+        com_port_num = int(sys.argv[1])
+    except ValueError:
+        print "Usage: %s <portnumber>" % (sys.argv[0],)
+        sys.exit(1)
+
+    
 app = app_controller.get_app_controller()
-port = bt_connections.get_port()
+port = bt_connections.get_port(portnum=com_port_num)
 while True:
     try:
         port.get_connection()
