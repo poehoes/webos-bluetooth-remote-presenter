@@ -1,6 +1,5 @@
 syntax: glob
-
 *.pyc
-bt_server/dist/* 
-bt_server/build/*
+dist/* 
+build/*
 *.ipk
