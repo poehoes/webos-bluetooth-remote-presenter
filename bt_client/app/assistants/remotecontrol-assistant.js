@@ -13,7 +13,7 @@ function RemotecontrolAssistant(remotehost) {
     
     // TIMER unique key for keepalives
     this.timer_key = "com.henschkowski.app.bluetoothpresenter.timer";
-}
+};
 
 
 RemotecontrolAssistant.prototype.setup = function() {
@@ -132,7 +132,7 @@ RemotecontrolAssistant.prototype.setup = function() {
 	onFailure : function (r){ that.logInfo("Audio keys subscribe(true): Failure, results=" + 
 					       JSON.stringify(r)); }   
     });
-}
+};
 
 
 RemotecontrolAssistant.prototype.handleCommand = function(event) {
@@ -160,7 +160,7 @@ RemotecontrolAssistant.prototype.handleCommand = function(event) {
     	break;
     	
     }
-}
+};
 
 
 RemotecontrolAssistant.prototype.activate = function(event) {
@@ -197,7 +197,7 @@ RemotecontrolAssistant.prototype.handleTap = function(event) {
     } else {
 	this.logInfo("Unknown element: " + event.srcElement.id);
     };
-}
+};
 
 RemotecontrolAssistant.prototype.handleKeydown = function(event) {
     /* Called when a keydown-event is send */
@@ -226,6 +226,7 @@ RemotecontrolAssistant.prototype.handleKeypress = function(event) {
 RemotecontrolAssistant.prototype.keepAliveTimer = function(){
     this.logInfo("Send keepalive"); 
     this.writePort("keepalive\n");
+    var that = this;
     if (Main.enableKeepalive == true) {
 
 	// Set the alarm for the next keepalive message
@@ -235,7 +236,6 @@ RemotecontrolAssistant.prototype.keepAliveTimer = function(){
 	var d = new Date((new Date()).getTime() + (10 * 1000));
 	var at = (d.getUTCMonth()+1) +'/'+d.getUTCDate()+'/'+d.getUTCFullYear() + " "+d.getUTCHours()+":"+d.getUTCMinutes()+":"+ (d.getUTCSeconds());
 	this.logInfo("Next keepalive at: " + d);
-	Mojo.Log.error("Keepalive started!");
 	
 	// set a new alarm
 	this.controller.serviceRequest('palm://com.palm.power/timeout', {
@@ -258,6 +258,20 @@ RemotecontrolAssistant.prototype.keepAliveTimer = function(){
     }
 };
 
+RemotecontrolAssistant.prototype.keepAliveTimerDisable = function() {
+    this.controller.serviceRequest('palm://com.palm.power/timeout', {
+	method: "clear",
+	parameters: {"key": this.timer_key},
+	onSuccess: function(objData) {
+	    that.logInfo("Timer unregistered: "+objData.returnValue);
+	},
+	onFailure: function(failData) {
+	    that.logInfo("Unable to unregister keepalive alarm: " + 
+			 failData.errorCode + "<br/>"+ failData.errorText);
+	}                                                            
+    });
+};
+
 
 RemotecontrolAssistant.prototype.openWriteReady = function(objData){
     /*
@@ -272,51 +286,11 @@ RemotecontrolAssistant.prototype.openWriteReady = function(objData){
 
     // Start sending keepalives if configured
     if (Main.enableKeepalive == true) {
-	timer_function = this.keepAliveTimer.bind(this)
-	
-	this.logInfo("Keepalives enabled");
-
-	// get the current date & then add 10 seconds
-	var now = new Date((new Date()).getTime());
-	this.logInfo("Now is " + now);
-	var d = new Date((new Date()).getTime() + (10 * 1000));
-	var at = (d.getUTCMonth()+1) +'/'+d.getUTCDate()+'/'+d.getUTCFullYear() + " "+d.getUTCHours()+":"+d.getUTCMinutes()+":"+ (d.getUTCSeconds());
-	this.logInfo("Next keepalive at: " + d);
-	Mojo.Log.error("Keepalive started!");
-
-	// set a new alarm
-	this.controller.serviceRequest('palm://com.palm.power/timeout', {
-	    method: "set",
-	    parameters: {
-		"wakeup": true,
-		"at": at,
-		"key": this.timer_key,
-		"uri": "palm://com.palm.applicationManager/launch",
-		"params": '{"id":"com.henschkowski.app.bluetoothpresenter", "params":{"message": "alarm!"}}'
-	    },
-	    onSuccess: function(objData) {
-		that.logInfo("Timer registered: " + objData.returnValue);
-	    },
-	    onFailure: function(failData) {
-		that.logInfo("Unable to register keepalive alarm: " + 
-			     failData.errorCode + "<br/>"+ failData.errorText);
-	    }                                                            
-	});
+	this.keepAliveTimer();
     } else {
-	this.logInfo("Keepalives disabled");
-	this.controller.serviceRequest('palm://com.palm.power/timeout', {
-	    method: "clear",
-	    parameters: {"key": this.timer_key},
-	    onSuccess: function(objData) {
-		that.logInfo("Timer unregistered: "+objData.returnValue);
-	    },
-	    onFailure: function(failData) {
-		that.logInfo("Unable to unregister keepalive alarm: " + 
-			     failData.errorCode + "<br/>"+ failData.errorText);
-	    }                                                            
-	});
+	this.keepAliveTimerDisable();
     }
-}
+};
 
 
 RemotecontrolAssistant.prototype.writePort = function(msg){
@@ -338,7 +312,7 @@ RemotecontrolAssistant.prototype.writePort = function(msg){
 			 failData.errorCode + "<br/>"+ failData.errorText);
         }                                                            
     });
-}
+};
 
 RemotecontrolAssistant.prototype.disconnectAll = function() {
     /* Disconnect SPP Device
@@ -349,7 +323,7 @@ RemotecontrolAssistant.prototype.disconnectAll = function() {
     var that=this; //used to scope this here.
     this.logInfo("disconnectAll()");
     this.closeSPP();
-}
+};
 
 
 RemotecontrolAssistant.prototype.closeSPP = function() {
@@ -370,7 +344,7 @@ RemotecontrolAssistant.prototype.closeSPP = function() {
 		that.disconnectSPP();},
         });
     }
-}
+};
 
 
 RemotecontrolAssistant.prototype.disconnectSPP = function() {
@@ -389,7 +363,7 @@ RemotecontrolAssistant.prototype.disconnectSPP = function() {
             that.logInfo("Fail: Disconnect from SSP, errCode: " + failData.errorCode);
         }
     });
-}
+};
 
 
 RemotecontrolAssistant.prototype.disableAllInput = function(val) {
@@ -413,18 +387,19 @@ RemotecontrolAssistant.prototype.disableAllInput = function(val) {
     
     boundHandleKeydown = this.handleKeydown.bindAsEventListener(this);
     this.controller.document.removeEventListener("keydown", boundHandleKeydown, true);
-}
+};
 
 
 RemotecontrolAssistant.prototype.deactivate = function(event) {
     this.disableAllInput(true);
     this.disconnectAll();  
-}
+};
 
 
-RemotecontrolAssistant.prototype.cleanup = function(event) {
+RemotecontrolAssistant.prototype.cleanup = function() {
+    this.keepAliveTimerDisable();
     this.disconnectAll();  
-} 
+};
 
 
 RemotecontrolAssistant.prototype.sppNotify = function(objData) {
@@ -498,7 +473,7 @@ RemotecontrolAssistant.prototype.sppNotify = function(objData) {
 	    }
         } 
     }
-}
+};
 
 
 RemotecontrolAssistant.prototype.logInfo = function(logText) {
@@ -510,4 +485,5 @@ RemotecontrolAssistant.prototype.logInfo = function(logText) {
 	    that.controller.get('log-output').innerHTML + 
 	    "<br /><br />";  
     }
-}
+};
+
